@@ -60,9 +60,9 @@ ws = np.array(ws)
 bs = np.array(bs)
 errors = np.array(errors)
 
-np.savetxt("weight1_normal_nn.txt",ws[:,:,0].flatten())
-np.savetxt("weight2_normal_nn.txt",ws[:,:,0].flatten())
-np.savetxt("bias_normal_nn.txt",bs[:,:,0].flatten())
-np.savetxt("errors_normal_nn.txt",errors)
+np.savetxt("result/weights/weight1_normal_nn.txt",ws[:,:,0].flatten())
+np.savetxt("result/weights/weight2_normal_nn.txt",ws[:,:,0].flatten())
+np.savetxt("result/weights/bias_normal_nn.txt",bs[:,:,0].flatten())
+np.savetxt("result/weights/errors_normal_nn.txt",errors)
 
 
