@@ -17,7 +17,7 @@ def sigmoid(x):
 	return 1/(1+np.exp(-x))
 
 def softplus(x):
-	return 1+np.log(np.exp(x))
+	return np.log(1+np.exp(x))
 
 def crossentropy(pred,label):
 	return np.sum(label*np.log(pred)+(1-label)*np.log(1-pred))
@@ -42,7 +42,6 @@ def total_loss(pred,label,w,b,mean_w,mean_b,cov_w,cov_b):
 def total_loss_with_scale(pred,label,w,b,mean_w,mean_b,cov_w,cov_b,p=0.25,cov_1=1,cov_2=1e-6):
 	return variantion_loss(w,b,mean_w,mean_b,cov_w,cov_b) - crossentropy(pred,label) - scale_mixture_prior(w,b,cov_1,cov_2,p)
 
-
 data = np.array([[0,0,0],
 			  [0,1,0],
 			  [1,0,0],
@@ -55,7 +54,7 @@ p_w = 2*np.random.random((data[:,2].reshape(1,-1).shape[0],data[:,:2].shape[1]))
 p_b = 2*np.random.random((data[:,2].reshape(1,-1).shape[0],1))-1
 
 # hyperparameters
-lr = 1e-5
+lr = 1e-6
 p_scale = .25
 cov_1 = 1
 cov_2 = 1e-6
@@ -66,7 +65,7 @@ acc = []
 ws = []
 bs = []
 
-for i in range(10000):
+for i in range(30000):
 	np.random.shuffle(data)
 	x = data[:,:2]
 	y = data[:,2].reshape(1,-1)
@@ -82,15 +81,9 @@ for i in range(10000):
 	b = mean_b + cov_b * eps_b
 
 	pred = sigmoid(w @ x.T + b)
-
-	# if i%100==0:
-	# 	print(pred)
 	
-	true_pred = np.sum(((pred >= 0.5).astype(np.int) == y).astype(int))
-	errors.append(total_loss_with_scale(pred,y,w,b,mean_w,mean_b,cov_w,cov_b,p_scale,cov_1,cov_2))
-	acc.append(true_pred/4)
-	ws.append(w)
-	bs.append(b)
+	errors.append(total_loss_with_scale(pred,y,w,b,mean_w,mean_b,cov_w,cov_b,p_scale,cov_1,cov_2) if i==0 else .01*errors[-1] + .09*total_loss_with_scale(pred,y,w,b,mean_w,mean_b,cov_w,cov_b,p_scale,cov_1,cov_2))
+
 
 	# calculate derivative of crossentropy loss wrt w,b
 	error = y - pred
@@ -134,15 +127,17 @@ for i in range(10000):
 	p_w = p_w - lr*dp_w
 	p_b = p_b - lr*dp_b
 
-
-ws = np.array(ws)
-bs = np.array(bs)
 errors = np.array(errors)
 
-np.savetxt("result/weights/weight1_bbb_nn.txt",ws[:,:,0].flatten())
-np.savetxt("result/weights/weight2_bbb_nn.txt",ws[:,:,0].flatten())
-np.savetxt("result/weights/bias_bbb_nn.txt",bs[:,:,0].flatten())
-np.savetxt("result/weights/errors_bbb_nn.txt",errors)
+size=10000
+sample_w1_dist = np.random.normal(mean_w[0,0],softplus(p_w[0,0]),size)
+sample_w2_dist = np.random.normal(mean_w[0,1],softplus(p_w[0,1]),size)
+sample_b_dist = np.random.normal(mean_b[0,0],softplus(p_b[0,0]),size)
+sns.distplot(sample_w1_dist,hist=False,label='w1')
+sns.distplot(sample_w2_dist,hist=False,label='w2')
+sns.distplot(sample_b_dist,hist=False,label='b')
+plt.savefig("result/figure/weight_distribution.png",dpi=300)
+np.savetxt("result/error/errors_bbb_nn.txt",errors)
 
 
 

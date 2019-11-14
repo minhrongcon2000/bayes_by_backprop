@@ -32,18 +32,14 @@ acc = []
 ws = []
 bs = []
 
-for i in range(10000):
+for i in range(30000):
   np.random.shuffle(data)
   x = data[:,:2]
   y = data[:,2].reshape(1,-1)
 
   pred = sigmoid(w @ x.T + b)
   
-  true_pred = np.sum(((pred >= 0.5).astype(np.int) == y).astype(int))
   errors.append(crossentropy(pred,y))
-  acc.append(true_pred/4)
-  ws.append(w)
-  bs.append(b)
 
   error = pred - y
 
@@ -56,13 +52,8 @@ for i in range(10000):
   w = w - lr*dw_crossentropy
   b = b - lr*db_crossentropy
 
-ws = np.array(ws)
-bs = np.array(bs)
 errors = np.array(errors)
 
-np.savetxt("result/weights/weight1_normal_nn.txt",ws[:,:,0].flatten())
-np.savetxt("result/weights/weight2_normal_nn.txt",ws[:,:,0].flatten())
-np.savetxt("result/weights/bias_normal_nn.txt",bs[:,:,0].flatten())
-np.savetxt("result/weights/errors_normal_nn.txt",errors)
+np.savetxt("result/error/errors_normal_nn.txt",errors)
 
 
